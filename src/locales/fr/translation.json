@@ -332,6 +332,7 @@
     "yesCancel": "Oui, annuler",
     "receiveStockTitle": "Réceptionner le stock",
     "receiveStockMsg": "Cela augmentera AUTOMATIQUEMENT les niveaux de stock pour tous les produits de cette commande. Êtes-vous prêt ?",
+    "confirmOrder": "Confirmer",
     "cancelOrderTitle": "Annuler la commande",
     "cancelOrderMsg": "Êtes-vous sûr de vouloir annuler ce bon de commande ? Cette action est irréversible.",
     "errorUpdating": "Erreur lors de la mise à jour du statut de la commande",

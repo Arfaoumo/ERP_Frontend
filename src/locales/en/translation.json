@@ -332,6 +332,7 @@
     "yesCancel": "Yes, Cancel",
     "receiveStockTitle": "Receive Stock",
     "receiveStockMsg": "This will AUTOMATICALLY increase stock levels for all products in this order. Are you ready?",
+    "confirmOrder": "Confirm",
     "cancelOrderTitle": "Cancel Order",
     "cancelOrderMsg": "Are you sure you want to cancel this purchase order? This action cannot be undone.",
     "errorUpdating": "Error updating order status",
