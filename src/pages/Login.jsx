@@ -1,5 +1,4 @@
 import { useState, useContext } from 'react';
-import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -15,12 +14,13 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    try {
-      const { data } = await axios.post('http://localhost:5000/api/auth/login', { email, password });
-      login(data);
+    
+    const result = await login(email, password);
+    
+    if (result.success) {
       navigate('/');
-    } catch (err) {
-      setError(err.response?.data?.message || t('auth.loginFailed'));
+    } else {
+      setError(result.message);
     }
   };
 
