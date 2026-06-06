@@ -3,6 +3,7 @@ import axios from 'axios';
 import { AuthContext } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import OcrInvoiceModal from './OcrInvoiceModal';
 
 const PurchaseOrderForm = () => {
   const [suppliers, setSuppliers] = useState([]);
@@ -15,6 +16,9 @@ const PurchaseOrderForm = () => {
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
   const { t } = useTranslation();
+
+  // OCR modal state
+  const [ocrModalOpen, setOcrModalOpen] = useState(false);
 
   // Create Product inline in PO states
   const [productModalOpen, setProductModalOpen] = useState(false);
@@ -202,6 +206,30 @@ const PurchaseOrderForm = () => {
 
   const filteredProductsList = getFilteredProducts();
 
+  const handleOcrResolved = ({ items, newProducts, supplier: updatedSupplier }) => {
+    if (Array.isArray(newProducts) && newProducts.length > 0) {
+      setProducts((prev) => {
+        const existingIds = new Set(prev.map((p) => p._id));
+        return [...prev, ...newProducts.filter((p) => !existingIds.has(p._id))];
+      });
+    }
+    if (updatedSupplier && updatedSupplier._id) {
+      setSuppliers((prev) => prev.map((s) => (
+        s._id === updatedSupplier._id ? { ...s, products: updatedSupplier.products } : s
+      )));
+    }
+    const incoming = (items || []).map((it) => ({
+      product: it.product,
+      quantity: Number(it.quantity),
+      buyingPrice: Number(it.buyingPrice)
+    }));
+    if (incoming.length === 0) return;
+    setOrderItems((prev) => {
+      const isInitialEmpty = prev.length === 1 && prev[0].product === '';
+      return isInitialEmpty ? incoming : [...prev, ...incoming];
+    });
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 p-8">
       <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-md border overflow-hidden">
@@ -296,7 +324,7 @@ const PurchaseOrderForm = () => {
                 </div>
               </div>
             ))}
-            <div className="flex justify-between items-center">
+            <div className="flex justify-between items-center flex-wrap gap-3">
               <button 
                 type="button" 
                 onClick={addItem}
@@ -304,14 +332,26 @@ const PurchaseOrderForm = () => {
               >
                 {t('purchases.addAnotherProduct')}
               </button>
-              <button 
-                type="button" 
-                onClick={() => setProductModalOpen(true)}
-                className="text-emerald-600 font-bold text-sm hover:underline flex items-center gap-1.5"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
-                {t('purchases.createNewProduct')}
-              </button>
+              <div className="flex items-center gap-4">
+                <button
+                  type="button"
+                  onClick={() => setOcrModalOpen(true)}
+                  disabled={!supplier}
+                  title={!supplier ? t('purchases.ocr.selectSupplierFirst') : ''}
+                  className="text-indigo-600 font-bold text-sm hover:underline flex items-center gap-1.5 disabled:text-slate-400 disabled:cursor-not-allowed disabled:no-underline"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+                  {t('purchases.ocr.scanInvoice')}
+                </button>
+                <button 
+                  type="button" 
+                  onClick={() => setProductModalOpen(true)}
+                  className="text-emerald-600 font-bold text-sm hover:underline flex items-center gap-1.5"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
+                  {t('purchases.createNewProduct')}
+                </button>
+              </div>
             </div>
           </div>
 
@@ -329,6 +369,16 @@ const PurchaseOrderForm = () => {
           </div>
         </form>
       </div>
+
+      {/* OCR Invoice Scan Modal */}
+      <OcrInvoiceModal
+        isOpen={ocrModalOpen}
+        onClose={() => setOcrModalOpen(false)}
+        supplier={supplier}
+        supplierName={suppliers.find(s => s._id === supplier)?.name}
+        categories={categories}
+        onResolved={handleOcrResolved}
+      />
 
       {/* Create Product Modal */}
       {productModalOpen && (
