@@ -3,34 +3,38 @@ import axios from 'axios';
 import { AuthContext } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-
 const SaleForm = () => {
   const [customers, setCustomers] = useState([]);
   const [products, setProducts] = useState([]);
-  const [saleItems, setSaleItems] = useState([{ product: '', quantity: 1, sellingPrice: 0 }]);
+  const [saleItems, setSaleItems] = useState([{
+    product: '',
+    quantity: 1,
+    sellingPrice: 0
+  }]);
   const [documentType] = useState('Quote');
   const [documentNumber, setDocumentNumber] = useState(`QT-${Date.now().toString().slice(-6)}`);
   const [customer, setCustomer] = useState('');
   const [courier, setCourier] = useState('NONE');
   const [couriers, setCouriers] = useState([]);
-
   useEffect(() => {
     setDocumentNumber(`QT-${Date.now().toString().slice(-6)}`);
   }, []);
-  
-  const { user } = useContext(AuthContext);
+  const {
+    user
+  } = useContext(AuthContext);
   const navigate = useNavigate();
-  const { t } = useTranslation();
-
+  const {
+    t
+  } = useTranslation();
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const config = { headers: { Authorization: `Bearer ${user.token}` } };
-        const [custData, prodData, courierData] = await Promise.all([
-          axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/customers`, config),
-          axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/products`, config),
-          axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/delivery-companies`, config)
-        ]);
+        const config = {
+          headers: {
+            Authorization: `Bearer ${user.token}`
+          }
+        };
+        const [custData, prodData, courierData] = await Promise.all([axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/customers`, config), axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/products`, config), axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/delivery-companies`, config)]);
         setCustomers(custData.data.filter(c => c.isActive));
         setProducts(prodData.data.filter(p => p.isActive !== false));
         setCouriers(courierData.data);
@@ -40,20 +44,20 @@ const SaleForm = () => {
     };
     if (user) fetchData();
   }, [user]);
-
   const addItem = () => {
-    setSaleItems([...saleItems, { product: '', quantity: 1, sellingPrice: 0 }]);
+    setSaleItems([...saleItems, {
+      product: '',
+      quantity: 1,
+      sellingPrice: 0
+    }]);
   };
-
-  const removeItem = (index) => {
+  const removeItem = index => {
     const newItems = saleItems.filter((_, i) => i !== index);
     setSaleItems(newItems);
   };
-
   const updateItem = (index, field, value) => {
     const newItems = [...saleItems];
     newItems[index][field] = value;
-
     if (field === 'product') {
       const selectedProd = products.find(p => p._id === value);
       if (selectedProd) {
@@ -62,46 +66,45 @@ const SaleForm = () => {
     }
     setSaleItems(newItems);
   };
-
   const calculateTotal = () => {
-    return saleItems.reduce((acc, item) => acc + (item.quantity * item.sellingPrice), 0);
+    return saleItems.reduce((acc, item) => acc + item.quantity * item.sellingPrice, 0);
   };
-
   const calculateDynamicTax = () => {
     return saleItems.reduce((acc, item) => {
       const prod = products.find(p => p._id === item.product);
       const taxRate = prod?.category?.taxRate ?? 0.19;
-      return acc + (item.quantity * item.sellingPrice * taxRate);
+      return acc + item.quantity * item.sellingPrice * taxRate;
     }, 0);
   };
-
-  const handleSubmit = async (e) => {
+  const handleSubmit = async e => {
     e.preventDefault();
     if (!customer || saleItems.some(item => !item.product)) {
       alert(t('saleForm.selectCustomerProducts'));
       return;
     }
-
-    // Check stock availability
     for (const item of saleItems) {
       const p = products.find(prod => prod._id === item.product);
       if (p && p.currentStock < item.quantity) {
-        alert(t('saleForm.insufficientStock', { name: p.name, stock: p.currentStock }));
+        alert(t('saleForm.insufficientStock', {
+          name: p.name,
+          stock: p.currentStock
+        }));
         return;
       }
     }
-
     try {
-      const config = { headers: { Authorization: `Bearer ${user.token}` } };
+      const config = {
+        headers: {
+          Authorization: `Bearer ${user.token}`
+        }
+      };
       const itemsWithSubtotal = saleItems.map(item => ({
         ...item,
         subtotal: item.quantity * item.sellingPrice
       }));
-
       const totalAmt = calculateTotal();
       const taxAmount = calculateDynamicTax();
       const totalWithTax = totalAmt + taxAmount;
-
       await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/sales`, {
         customer,
         documentNumber,
@@ -118,9 +121,7 @@ const SaleForm = () => {
       alert(t('saleForm.errorCreating'));
     }
   };
-
-  return (
-    <div className="min-h-screen bg-[#f8fafc] p-8">
+  return <div className="min-h-screen bg-[#f8fafc] p-8">
       <div className="max-w-4xl mx-auto bg-white rounded-[2rem] shadow-sm border border-slate-200/60 overflow-hidden">
         <div className="p-8 border-b flex justify-between items-center bg-white">
           <div className="flex items-center gap-4">
@@ -138,23 +139,11 @@ const SaleForm = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div>
               <label className="block text-xs font-black uppercase text-slate-400 tracking-widest mb-2">{t('saleForm.documentNumber')}</label>
-              <input 
-                type="text" 
-                value={documentNumber} 
-                readOnly
-                className="w-full p-3 border border-slate-200 rounded-xl bg-slate-50 font-mono text-slate-400 font-bold cursor-not-allowed"
-                title="Auto-generated document number"
-                required
-              />
+              <input type="text" value={documentNumber} readOnly className="w-full p-3 border border-slate-200 rounded-xl bg-slate-50 font-mono text-slate-400 font-bold cursor-not-allowed" title="Auto-generated document number" required />
             </div>
             <div>
               <label className="block text-xs font-black uppercase text-slate-400 tracking-widest mb-2">{t('saleForm.selectCustomer')}</label>
-              <select 
-                value={customer} 
-                onChange={(e) => setCustomer(e.target.value)}
-                className="w-full p-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none transition-all text-sm font-bold text-slate-900"
-                required
-              >
+              <select value={customer} onChange={e => setCustomer(e.target.value)} className="w-full p-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none transition-all text-sm font-bold text-slate-900" required>
                 <option value="">{t('saleForm.chooseClient')}</option>
                 {customers.map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
               </select>
@@ -163,11 +152,7 @@ const SaleForm = () => {
 
           <div>
             <label className="block text-xs font-black uppercase text-slate-400 tracking-widest mb-2">{t('saleForm.deliveryBy')}</label>
-            <select 
-              value={courier} 
-              onChange={(e) => setCourier(e.target.value)}
-              className="w-full p-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none transition-all text-sm font-bold text-slate-900"
-            >
+            <select value={courier} onChange={e => setCourier(e.target.value)} className="w-full p-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none transition-all text-sm font-bold text-slate-900">
               <option value="NONE">{t('common.none')}</option>
               {couriers.map(c => <option key={c._id} value={c.name}>{c.name}</option>)}
             </select>
@@ -176,56 +161,30 @@ const SaleForm = () => {
           <div className="space-y-4">
             <div className="flex justify-between items-center border-b border-slate-100 pb-4">
               <h2 className="text-lg font-black text-slate-800 uppercase tracking-tight">{t('saleForm.invoiceItems')}</h2>
-              <button 
-                type="button" 
-                onClick={addItem}
-                className="text-xs font-black text-blue-600 hover:text-blue-800 flex items-center gap-1 uppercase tracking-widest transition-colors"
-              >
+              <button type="button" onClick={addItem} className="text-xs font-black text-blue-600 hover:text-blue-800 flex items-center gap-1 uppercase tracking-widest transition-colors">
                 <span>{t('saleForm.addItem')}</span>
               </button>
             </div>
             
-            {saleItems.map((item, index) => (
-              <div key={index} className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end bg-slate-50/50 p-6 rounded-2xl border border-slate-100">
+            {saleItems.map((item, index) => <div key={index} className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end bg-slate-50/50 p-6 rounded-2xl border border-slate-100">
                 <div className="md:col-span-5">
                   <label className="block text-[10px] font-black uppercase text-slate-400 mb-1 tracking-widest">{t('saleForm.product')}</label>
-                  <select 
-                    value={item.product} 
-                    onChange={(e) => updateItem(index, 'product', e.target.value)}
-                    className="w-full p-2.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none text-sm font-bold text-slate-900 transition-all"
-                    required
-                  >
+                  <select value={item.product} onChange={e => updateItem(index, 'product', e.target.value)} className="w-full p-2.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none text-sm font-bold text-slate-900 transition-all" required>
                     <option value="">{t('saleForm.selectProduct')}</option>
-                    {products.map(p => (
-                      <option key={p._id} value={p._id} disabled={p.currentStock <= 0}>
+                    {products.map(p => <option key={p._id} value={p._id} disabled={p.currentStock <= 0}>
                         {p.name} ({t('inventory.stock')}: {p.currentStock})
-                      </option>
-                    ))}
+                      </option>)}
                   </select>
                 </div>
                 <div className="md:col-span-2">
                   <label className="block text-[10px] font-black uppercase text-slate-400 mb-1 tracking-widest">{t('saleForm.qty')}</label>
-                  <input 
-                    type="number" 
-                    min="1"
-                    value={item.quantity} 
-                    onChange={(e) => updateItem(index, 'quantity', parseInt(e.target.value))}
-                    className="w-full p-2.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none text-sm font-bold text-slate-900 transition-all"
-                    required
-                  />
+                  <input type="number" min="1" value={item.quantity} onChange={e => updateItem(index, 'quantity', parseInt(e.target.value))} className="w-full p-2.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none text-sm font-bold text-slate-900 transition-all" required />
                 </div>
                 <div className="md:col-span-2">
                   <label className="block text-[10px] font-black uppercase text-slate-400 mb-1 tracking-widest">{t('saleForm.sellingPrice')}</label>
                   <div className="relative">
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-bold">€</span>
-                    <input 
-                      type="number" 
-                      step="0.01"
-                      value={item.sellingPrice} 
-                      readOnly
-                      className="w-full pl-7 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-400 cursor-not-allowed"
-                      required
-                    />
+                    <input type="number" step="0.01" value={item.sellingPrice} readOnly className="w-full pl-7 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-400 cursor-not-allowed" required />
                   </div>
                 </div>
                 <div className="md:col-span-2 text-right self-center">
@@ -233,14 +192,11 @@ const SaleForm = () => {
                   <p className="font-black text-slate-900 text-sm">€{(item.quantity * item.sellingPrice).toFixed(2)}</p>
                 </div>
                 <div className="md:col-span-1 text-center">
-                  {saleItems.length > 1 && (
-                    <button type="button" onClick={() => removeItem(index)} className="text-slate-300 hover:text-rose-600 transition-colors">
+                  {saleItems.length > 1 && <button type="button" onClick={() => removeItem(index)} className="text-slate-300 hover:text-rose-600 transition-colors">
                       <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                    </button>
-                  )}
+                    </button>}
                 </div>
-              </div>
-            ))}
+              </div>)}
           </div>
 
           <div className="flex justify-end pt-8 border-t border-slate-100">
@@ -261,24 +217,15 @@ const SaleForm = () => {
           </div>
 
           <div className="flex justify-end gap-3 pt-6 border-t border-slate-100">
-            <button 
-              type="button" 
-              onClick={() => navigate('/sales/pipeline')}
-              className="px-6 py-3 border border-slate-200 rounded-2xl text-xs font-black uppercase tracking-widest text-slate-500 hover:bg-slate-50 transition-colors"
-            >
+            <button type="button" onClick={() => navigate('/sales/pipeline')} className="px-6 py-3 border border-slate-200 rounded-2xl text-xs font-black uppercase tracking-widest text-slate-500 hover:bg-slate-50 transition-colors">
               {t('common.cancel')}
             </button>
-            <button 
-              type="submit" 
-              className="px-8 py-3 bg-blue-600 text-white rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-blue-700 transition-all shadow-lg shadow-blue-200 active:scale-95"
-            >
+            <button type="submit" className="px-8 py-3 bg-blue-600 text-white rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-blue-700 transition-all shadow-lg shadow-blue-200 active:scale-95">
               {t('saleForm.createQuote')}
             </button>
           </div>
         </form>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default SaleForm;

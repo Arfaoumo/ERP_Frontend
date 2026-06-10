@@ -3,7 +3,6 @@ import axios from 'axios';
 import { AuthContext } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-
 const StockMovementList = () => {
   const [movements, setMovements] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -11,14 +10,24 @@ const StockMovementList = () => {
   const [typeFilter, setTypeFilter] = useState('ALL');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
-  const { user } = useContext(AuthContext);
+  const {
+    user
+  } = useContext(AuthContext);
   const navigate = useNavigate();
-  const { t, i18n } = useTranslation();
-
+  const {
+    t,
+    i18n
+  } = useTranslation();
   const fetchMovements = async () => {
     try {
-      const config = { headers: { Authorization: `Bearer ${user.token}` } };
-      const { data } = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/products/movements`, config);
+      const config = {
+        headers: {
+          Authorization: `Bearer ${user.token}`
+        }
+      };
+      const {
+        data
+      } = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/products/movements`, config);
       setMovements(data);
     } catch (error) {
       console.error('Error fetching movements', error);
@@ -26,23 +35,18 @@ const StockMovementList = () => {
       setLoading(false);
     }
   };
-
   useEffect(() => {
     if (user) fetchMovements();
   }, [user]);
-
   const filteredMovements = movements.filter(m => {
     const productMatch = m.product && m.product.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const userMatch = m.user && (`${m.user.firstName} ${m.user.lastName}`).toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesSearch = productMatch || userMatch || (searchTerm === '');
-
+    const userMatch = m.user && `${m.user.firstName} ${m.user.lastName}`.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = productMatch || userMatch || searchTerm === '';
     const matchesType = typeFilter === 'ALL' || m.type === typeFilter;
-
     let matchesDate = true;
     if (startDate || endDate) {
       const mDate = new Date(m.createdAt);
       mDate.setHours(0, 0, 0, 0);
-      
       if (startDate) {
         const sDate = new Date(startDate);
         sDate.setHours(0, 0, 0, 0);
@@ -54,11 +58,9 @@ const StockMovementList = () => {
         if (mDate > eDate) matchesDate = false;
       }
     }
-
     return matchesSearch && matchesType && matchesDate;
   });
-
-  const translateReason = (reason) => {
+  const translateReason = reason => {
     if (!reason) return '-';
     if (reason.startsWith('Sales Order #')) return `${t('inventory.salesOrder')} #${reason.split('#')[1]}`;
     if (reason.startsWith('Delivery Note #')) return `${t('inventory.deliveryNote')} #${reason.split('#')[1]}`;
@@ -66,9 +68,7 @@ const StockMovementList = () => {
     if (reason.includes('adjustment:')) return t('inventory.manualAdjustment');
     return reason;
   };
-
-  return (
-    <div className="min-h-screen bg-[#f8fafc] p-8">
+  return <div className="min-h-screen bg-[#f8fafc] p-8">
       <div className="max-w-7xl mx-auto space-y-6">
         <div className="bg-white rounded-[2rem] shadow-sm border border-slate-200/60 overflow-hidden">
           <div className="p-8 border-b flex flex-col xl:flex-row justify-between items-center bg-white gap-6">
@@ -86,56 +86,31 @@ const StockMovementList = () => {
 
             <div className="flex flex-col items-end gap-3 w-full xl:w-auto">
               <div className="relative w-full xl:w-[400px]">
-                <input 
-                  type="text" 
-                  placeholder={t('inventory.searchMovementsPlaceholder')}
-                  value={searchTerm}
-                  onChange={e => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all font-bold text-slate-700 bg-slate-50"
-                />
+                <input type="text" placeholder={t('inventory.searchMovementsPlaceholder')} value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all font-bold text-slate-700 bg-slate-50" />
                 <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
               </div>
 
               <div className="flex flex-wrap items-center justify-end gap-3 w-full">
-                <select 
-                  value={typeFilter} 
-                  onChange={(e) => setTypeFilter(e.target.value)}
-                  className="py-2.5 px-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none text-[10px] font-black uppercase tracking-widest text-slate-700 transition-all"
-                >
+                <select value={typeFilter} onChange={e => setTypeFilter(e.target.value)} className="py-2.5 px-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none text-[10px] font-black uppercase tracking-widest text-slate-700 transition-all">
                   <option value="ALL">{t('inventory.allMovements')}</option>
                   <option value="IN">{t('inventory.stockIn')}</option>
                   <option value="OUT">{t('inventory.stockOut')}</option>
                 </select>
 
                 <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2">
-                  <input 
-                    type="date" 
-                    value={startDate}
-                    onChange={(e) => setStartDate(e.target.value)}
-                    className="bg-transparent border-none focus:outline-none text-xs font-bold text-slate-700 w-28"
-                    title={t('inventory.startDate', 'Date de début')}
-                    lang={i18n.language === 'fr' ? 'fr-FR' : 'en-US'}
-                  />
+                  <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="bg-transparent border-none focus:outline-none text-xs font-bold text-slate-700 w-28" title={t('inventory.startDate', 'Date de début')} lang={i18n.language === 'fr' ? 'fr-FR' : 'en-US'} />
                   <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t('common.to')}</span>
-                  <input 
-                    type="date" 
-                    value={endDate}
-                    onChange={(e) => setEndDate(e.target.value)}
-                    className="bg-transparent border-none focus:outline-none text-xs font-bold text-slate-700 w-28"
-                    title={t('inventory.endDate', 'Date de fin')}
-                    lang={i18n.language === 'fr' ? 'fr-FR' : 'en-US'}
-                  />
+                  <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className="bg-transparent border-none focus:outline-none text-xs font-bold text-slate-700 w-28" title={t('inventory.endDate', 'Date de fin')} lang={i18n.language === 'fr' ? 'fr-FR' : 'en-US'} />
                 </div>
 
-                {(searchTerm || typeFilter !== 'ALL' || startDate || endDate) && (
-                  <button 
-                    onClick={() => { setSearchTerm(''); setTypeFilter('ALL'); setStartDate(''); setEndDate(''); }}
-                    className="w-10 h-10 flex items-center justify-center rounded-xl bg-rose-50 text-rose-400 hover:bg-rose-100 hover:text-rose-600 transition-colors"
-                    title={t('common.clear')}
-                  >
+                {(searchTerm || typeFilter !== 'ALL' || startDate || endDate) && <button onClick={() => {
+                setSearchTerm('');
+                setTypeFilter('ALL');
+                setStartDate('');
+                setEndDate('');
+              }} className="w-10 h-10 flex items-center justify-center rounded-xl bg-rose-50 text-rose-400 hover:bg-rose-100 hover:text-rose-600 transition-colors" title={t('common.clear')}>
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                  </button>
-                )}
+                  </button>}
               </div>
             </div>
           </div>
@@ -153,8 +128,7 @@ const StockMovementList = () => {
                 </tr>
               </thead>
               <tbody>
-                {loading ? (
-                  <tr>
+                {loading ? <tr>
                     <td colSpan="6" className="p-12 text-center">
                       <div className="flex flex-col items-center justify-center">
                         <div className="relative w-10 h-10">
@@ -164,32 +138,24 @@ const StockMovementList = () => {
                         <p className="mt-4 text-sm font-medium text-slate-500 animate-pulse">{t('inventory.loadingMovements')}</p>
                       </div>
                     </td>
-                  </tr>
-                ) : filteredMovements.map(m => (
-                  <tr key={m._id} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors group">
+                  </tr> : filteredMovements.map(m => <tr key={m._id} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors group">
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-slate-500">
-                      {new Date(m.createdAt).toLocaleString(i18n.language, { 
-                        year: 'numeric', 
-                        month: '2-digit', 
-                        day: '2-digit', 
-                        hour: '2-digit', 
-                        minute: '2-digit' 
-                      })}
+                      {new Date(m.createdAt).toLocaleString(i18n.language, {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  })}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      {m.product ? (
-                        <div className="flex flex-col">
+                      {m.product ? <div className="flex flex-col">
                           <span className="font-bold text-slate-900">{m.product.name}</span>
                           <span className="text-[10px] font-black text-slate-400 tracking-widest">{m.product.sku}</span>
-                        </div>
-                      ) : <span className="text-[10px] font-black text-rose-400 tracking-widest uppercase">{t('inventory.productDeleted')}</span>}
+                        </div> : <span className="text-[10px] font-black text-rose-400 tracking-widest uppercase">{t('inventory.productDeleted')}</span>}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-center">
-                      {m.type === 'IN' ? (
-                        <span className="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black tracking-widest bg-emerald-50 text-emerald-600 border border-emerald-100">{t('inventory.stockIn').toUpperCase()}</span>
-                      ) : (
-                        <span className="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black tracking-widest bg-rose-50 text-rose-500 border border-rose-100">{t('inventory.stockOut').toUpperCase()}</span>
-                      )}
+                      {m.type === 'IN' ? <span className="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black tracking-widest bg-emerald-50 text-emerald-600 border border-emerald-100">{t('inventory.stockIn').toUpperCase()}</span> : <span className="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black tracking-widest bg-rose-50 text-rose-500 border border-rose-100">{t('inventory.stockOut').toUpperCase()}</span>}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-black text-center text-slate-900">
                       {m.type === 'IN' ? `+${m.quantity}` : `-${m.quantity}`}
@@ -200,22 +166,17 @@ const StockMovementList = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-[10px] font-black tracking-widest text-slate-400 uppercase">
                       {translateReason(m.reason)}
                     </td>
-                  </tr>
-                ))}
-                {!loading && filteredMovements.length === 0 && (
-                  <tr>
+                  </tr>)}
+                {!loading && filteredMovements.length === 0 && <tr>
                     <td colSpan="6" className="p-12 text-center text-slate-400 font-bold uppercase tracking-widest text-xs">
                       {t('inventory.noMovements')}
                     </td>
-                  </tr>
-                )}
+                  </tr>}
               </tbody>
             </table>
           </div>
         </div>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default StockMovementList;

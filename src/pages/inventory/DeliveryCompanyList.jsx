@@ -3,20 +3,28 @@ import axios from 'axios';
 import { AuthContext } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-
 const DeliveryCompanyList = () => {
-  const { user } = useContext(AuthContext);
+  const {
+    user
+  } = useContext(AuthContext);
   const [couriers, setCouriers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const navigate = useNavigate();
-  const { t } = useTranslation();
-
+  const {
+    t
+  } = useTranslation();
   const fetchCouriers = async () => {
     try {
-      const config = { headers: { Authorization: `Bearer ${user.token}` } };
-      const { data } = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/delivery-companies/all`, config);
+      const config = {
+        headers: {
+          Authorization: `Bearer ${user.token}`
+        }
+      };
+      const {
+        data
+      } = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/delivery-companies/all`, config);
       setCouriers(data);
     } catch (error) {
       console.error(error);
@@ -24,36 +32,33 @@ const DeliveryCompanyList = () => {
       setLoading(false);
     }
   };
-
   useEffect(() => {
     if (user) fetchCouriers();
   }, [user]);
-
   const filteredCouriers = couriers.filter(courier => {
-    const matchesSearch = courier.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (courier.contactEmail && courier.contactEmail.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (courier.email && courier.email.toLowerCase().includes(searchTerm.toLowerCase()));
-    
+    const matchesSearch = courier.name.toLowerCase().includes(searchTerm.toLowerCase()) || courier.contactEmail && courier.contactEmail.toLowerCase().includes(searchTerm.toLowerCase()) || courier.email && courier.email.toLowerCase().includes(searchTerm.toLowerCase());
     let matchesStatus = true;
     if (statusFilter === 'Active') matchesStatus = courier.isActive === true;
     if (statusFilter === 'Inactive') matchesStatus = courier.isActive === false;
-
     return matchesSearch && matchesStatus;
   });
-
   const handleToggleStatus = async (id, currentStatus) => {
     try {
-      const config = { headers: { Authorization: `Bearer ${user.token}` } };
-      await axios.patch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/delivery-companies/${id}/toggle`, { isActive: !currentStatus }, config);
+      const config = {
+        headers: {
+          Authorization: `Bearer ${user.token}`
+        }
+      };
+      await axios.patch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/delivery-companies/${id}/toggle`, {
+        isActive: !currentStatus
+      }, config);
       fetchCouriers();
     } catch (error) {
       console.error(error);
       alert(t('inventory.errorTogglingStatus'));
     }
   };
-
-  return (
-    <div className="min-h-screen bg-[#f8fafc] p-8">
+  return <div className="min-h-screen bg-[#f8fafc] p-8">
       <div className="max-w-7xl mx-auto space-y-6">
         <div className="bg-white rounded-[2rem] shadow-sm border border-slate-200/60 overflow-hidden">
           <div className="p-8 border-b flex flex-col md:flex-row justify-between items-center bg-white gap-4">
@@ -67,33 +72,20 @@ const DeliveryCompanyList = () => {
                </div>
             </div>
             <div className="flex flex-wrap items-center gap-4 mt-4 md:mt-0">
-              {/* Search Bar */}
+              {}
               <div className="relative">
-                <input 
-                  type="text" 
-                  placeholder={t('common.search', 'Search couriers...')}
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-9 pr-4 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500/20 outline-none w-64 bg-slate-50 font-bold text-slate-900"
-                />
+                <input type="text" placeholder={t('common.search', 'Search couriers...')} value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="pl-9 pr-4 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500/20 outline-none w-64 bg-slate-50 font-bold text-slate-900" />
                 <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
               </div>
               
-              {/* Status Filter */}
-              <select 
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 focus:ring-2 focus:ring-blue-500/20 outline-none cursor-pointer tracking-wider"
-              >
+              {}
+              <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 focus:ring-2 focus:ring-blue-500/20 outline-none cursor-pointer tracking-wider">
                 <option value="All">{t('common.allStatus', 'All Statuses')}</option>
                 <option value="Active">{t('common.active', 'Actif')}</option>
                 <option value="Inactive">{t('common.inactive', 'Inactif')}</option>
               </select>
 
-              <button 
-                onClick={() => navigate('/delivery-companies/new')}
-                className="bg-blue-600 text-white px-6 py-2.5 rounded-2xl text-sm font-black uppercase tracking-widest hover:bg-blue-700 transition-all shadow-lg shadow-blue-200 active:scale-95"
-              >
+              <button onClick={() => navigate('/delivery-companies/new')} className="bg-blue-600 text-white px-6 py-2.5 rounded-2xl text-sm font-black uppercase tracking-widest hover:bg-blue-700 transition-all shadow-lg shadow-blue-200 active:scale-95">
                 {t('inventory.registerCourierBtn')}
               </button>
             </div>
@@ -110,15 +102,12 @@ const DeliveryCompanyList = () => {
                 </tr>
               </thead>
               <tbody>
-                {loading ? (
-                  <tr>
+                {loading ? <tr>
                     <td colSpan="4" className="p-20 text-center">
                       <div className="inline-block w-8 h-8 border-4 border-blue-600/20 border-t-blue-600 rounded-full animate-spin"></div>
                       <p className="mt-4 text-[10px] font-black text-slate-400 uppercase tracking-widest animate-pulse">{t('inventory.loadingCouriers')}</p>
                     </td>
-                  </tr>
-                ) : filteredCouriers.map(courier => (
-                  <tr key={courier._id} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors group">
+                  </tr> : filteredCouriers.map(courier => <tr key={courier._id} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors group">
                     <td className="px-8 py-6 text-left">
                       <p className="text-sm font-black text-slate-900 uppercase">{courier.name}</p>
                     </td>
@@ -126,37 +115,26 @@ const DeliveryCompanyList = () => {
                       {courier.contactEmail || courier.email || '--'}
                     </td>
                     <td className="px-8 py-6 text-center">
-                      <button 
-                        onClick={() => handleToggleStatus(courier._id, courier.isActive)}
-                        className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border transition-colors ${courier.isActive ? 'bg-green-50 text-green-700 border-green-100 hover:bg-green-100' : 'bg-slate-100 text-slate-500 border-slate-200 hover:bg-slate-200'}`}
-                      >
+                      <button onClick={() => handleToggleStatus(courier._id, courier.isActive)} className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border transition-colors ${courier.isActive ? 'bg-green-50 text-green-700 border-green-100 hover:bg-green-100' : 'bg-slate-100 text-slate-500 border-slate-200 hover:bg-slate-200'}`}>
                         {courier.isActive ? t('common.active') : t('common.inactive')}
                       </button>
                     </td>
                     <td className="px-8 py-6 text-center">
-                      <button 
-                        onClick={() => navigate(`/delivery-companies/edit/${courier._id}`)} 
-                        className="text-[10px] font-black text-blue-600 hover:text-blue-800 uppercase tracking-widest transition-all"
-                      >
+                      <button onClick={() => navigate(`/delivery-companies/edit/${courier._id}`)} className="text-[10px] font-black text-blue-600 hover:text-blue-800 uppercase tracking-widest transition-all">
                         {t('common.edit', 'Modifier')}
                       </button>
                     </td>
-                  </tr>
-                ))}
-                {!loading && filteredCouriers.length === 0 && (
-                  <tr>
+                  </tr>)}
+                {!loading && filteredCouriers.length === 0 && <tr>
                     <td colSpan="4" className="p-20 text-center">
                       <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest italic">{t('inventory.noCouriers')}</p>
                     </td>
-                  </tr>
-                )}
+                  </tr>}
               </tbody>
             </table>
           </div>
         </div>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default DeliveryCompanyList;

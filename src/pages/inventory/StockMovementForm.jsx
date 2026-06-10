@@ -3,18 +3,30 @@ import axios from 'axios';
 import { AuthContext } from '../../context/AuthContext';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-
 const StockMovementForm = () => {
-  const { id } = useParams();
-  const [formData, setFormData] = useState({ type: 'IN', quantity: 1, reason: '' });
-  const { user } = useContext(AuthContext);
+  const {
+    id
+  } = useParams();
+  const [formData, setFormData] = useState({
+    type: 'IN',
+    quantity: 1,
+    reason: ''
+  });
+  const {
+    user
+  } = useContext(AuthContext);
   const navigate = useNavigate();
-  const { t } = useTranslation();
-
-  const handleSubmit = async (e) => {
+  const {
+    t
+  } = useTranslation();
+  const handleSubmit = async e => {
     e.preventDefault();
     try {
-      const config = { headers: { Authorization: `Bearer ${user.token}` } };
+      const config = {
+        headers: {
+          Authorization: `Bearer ${user.token}`
+        }
+      };
       await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/products/${id}/stock`, formData, config);
       navigate('/inventory');
     } catch (error) {
@@ -22,9 +34,7 @@ const StockMovementForm = () => {
       alert(error.response?.data?.message || t('inventory.errorMovingStock'));
     }
   };
-
-  return (
-    <div className="min-h-screen bg-[#f8fafc] p-8">
+  return <div className="min-h-screen bg-[#f8fafc] p-8">
       <div className="max-w-3xl mx-auto bg-white rounded-[2rem] shadow-sm border border-slate-200/60 overflow-hidden">
         <div className="p-8 border-b flex justify-between items-center bg-white">
           <div className="flex items-center gap-4">
@@ -46,20 +56,29 @@ const StockMovementForm = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div>
               <label className="block text-xs font-black uppercase text-slate-400 tracking-widest mb-2">{t('inventory.movementType')}</label>
-              <select className="w-full p-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none transition-all text-sm font-bold text-slate-900" value={formData.type} onChange={e => setFormData({...formData, type: e.target.value})}>
+              <select className="w-full p-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none transition-all text-sm font-bold text-slate-900" value={formData.type} onChange={e => setFormData({
+              ...formData,
+              type: e.target.value
+            })}>
                 <option value="IN">{t('inventory.movementIn', 'ENTRÉE')}</option>
                 <option value="OUT">{t('inventory.movementOut', 'SORTIE')}</option>
               </select>
             </div>
             <div>
               <label className="block text-xs font-black uppercase text-slate-400 tracking-widest mb-2">{t('inventory.quantity')}</label>
-              <input type="number" min="1" className="w-full p-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none transition-all text-sm font-bold text-slate-900" required value={formData.quantity} onChange={e => setFormData({...formData, quantity: e.target.value})} />
+              <input type="number" min="1" className="w-full p-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none transition-all text-sm font-bold text-slate-900" required value={formData.quantity} onChange={e => setFormData({
+              ...formData,
+              quantity: e.target.value
+            })} />
             </div>
           </div>
 
           <div>
             <label className="block text-xs font-black uppercase text-slate-400 tracking-widest mb-2">{t('inventory.reasonRef')}</label>
-            <input type="text" placeholder={t('inventory.reasonPlaceholder')} className="w-full p-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none transition-all text-sm font-bold text-slate-900 uppercase placeholder:text-slate-300" required value={formData.reason} onChange={e => setFormData({...formData, reason: e.target.value})} />
+            <input type="text" placeholder={t('inventory.reasonPlaceholder')} className="w-full p-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none transition-all text-sm font-bold text-slate-900 uppercase placeholder:text-slate-300" required value={formData.reason} onChange={e => setFormData({
+            ...formData,
+            reason: e.target.value
+          })} />
           </div>
 
           <div className="flex justify-end gap-3 pt-6 border-t border-slate-100">
@@ -68,8 +87,6 @@ const StockMovementForm = () => {
           </div>
         </form>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default StockMovementForm;

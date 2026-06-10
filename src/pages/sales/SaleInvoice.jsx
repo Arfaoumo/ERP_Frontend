@@ -3,26 +3,35 @@ import axios from 'axios';
 import { useParams } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
 import { useTranslation } from 'react-i18next';
-
 const SaleInvoice = () => {
-  const { id } = useParams();
+  const {
+    id
+  } = useParams();
   const [sale, setSale] = useState(null);
   const [courierEmail, setCourierEmail] = useState(null);
   const [loading, setLoading] = useState(true);
-  const { user } = useContext(AuthContext);
-  const { t, i18n } = useTranslation();
-  const tFr = i18n.getFixedT ? i18n.getFixedT('fr') : (key) => t(key, { lng: 'fr' });
-
+  const {
+    user
+  } = useContext(AuthContext);
+  const {
+    t,
+    i18n
+  } = useTranslation();
+  const tFr = i18n.getFixedT ? i18n.getFixedT('fr') : key => t(key, {
+    lng: 'fr'
+  });
   useEffect(() => {
     const fetchSaleAndCourier = async () => {
       try {
-        const config = { headers: { Authorization: `Bearer ${user.token}` } };
-        const [salesRes, couriersRes] = await Promise.all([
-          axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/sales`, config),
-          axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/delivery-companies`, config).catch(() => ({ data: [] }))
-        ]);
+        const config = {
+          headers: {
+            Authorization: `Bearer ${user.token}`
+          }
+        };
+        const [salesRes, couriersRes] = await Promise.all([axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/sales`, config), axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/delivery-companies`, config).catch(() => ({
+          data: []
+        }))]);
         const found = salesRes.data.find(s => s._id === id);
-
         if (found) {
           setSale(found);
           if (found.courier && found.courier.toUpperCase() !== 'NONE') {
@@ -40,28 +49,27 @@ const SaleInvoice = () => {
     };
     if (user) fetchSaleAndCourier();
   }, [id, user]);
-
-
-
-  const translateDocType = (type) => {
+  const translateDocType = type => {
     switch (type) {
-      case 'Invoice': return tFr('invoice.facture');
-      case 'Quote': return tFr('invoice.devis');
-      case 'Order': return tFr('invoice.commande');
-      case 'DeliveryNote': return tFr('invoice.bonDeLivraison');
-      default: return tFr('invoice.document');
+      case 'Invoice':
+        return tFr('invoice.facture');
+      case 'Quote':
+        return tFr('invoice.devis');
+      case 'Order':
+        return tFr('invoice.commande');
+      case 'DeliveryNote':
+        return tFr('invoice.bonDeLivraison');
+      default:
+        return tFr('invoice.document');
     }
   };
-
   if (loading) return <div className="p-10 text-center">{t('invoice.generating')}</div>;
   if (!sale) return <div className="p-10 text-center">{t('invoice.notFound')}</div>;
-
-  return (
-    <div className="min-h-screen bg-slate-50 p-8 flex justify-center items-start print:p-0 print:bg-white font-sans">
-      {/* Invoice Page */}
+  return <div className="min-h-screen bg-slate-50 p-8 flex justify-center items-start print:p-0 print:bg-white font-sans">
+      {}
       <div className="w-full max-w-[850px] bg-white shadow-xl p-16 print:shadow-none print:border-none print:max-w-none print:p-0">
 
-        {/* Header */}
+        {}
         <div className="flex justify-between items-start mb-16">
           <div>
             <h1 className="text-4xl font-black text-slate-900 uppercase tracking-tighter mb-1">
@@ -76,7 +84,7 @@ const SaleInvoice = () => {
           </div>
         </div>
 
-        {/* Info Grid */}
+        {}
         <div className="grid grid-cols-2 gap-12 mb-16">
           <div>
             <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-3">{tFr('invoice.billTo')}</p>
@@ -94,19 +102,15 @@ const SaleInvoice = () => {
             </p>
             <div className="text-sm text-slate-600 space-y-1">
               <p><span className="font-bold uppercase">{tFr('invoice.date')}</span> {new Date(sale.createdAt).toLocaleDateString(i18n.language === 'fr' ? 'fr-FR' : 'en-US')}</p>
-              {['Invoice', 'DeliveryNote', 'Order', 'Quote'].includes(sale.documentType) && sale.courier && sale.courier.toUpperCase() !== 'NONE' && (
-                <>
-                  {courierEmail && (
-                    <p><span className="font-bold uppercase">{tFr('common.email')} :</span> {courierEmail}</p>
-                  )}
+              {['Invoice', 'DeliveryNote', 'Order', 'Quote'].includes(sale.documentType) && sale.courier && sale.courier.toUpperCase() !== 'NONE' && <>
+                  {courierEmail && <p><span className="font-bold uppercase">{tFr('common.email')} :</span> {courierEmail}</p>}
                   <p><span className="font-bold uppercase">{tFr('invoice.deliveryBy')}</span> {sale.courier.toUpperCase()}</p>
-                </>
-              )}
+                </>}
             </div>
           </div>
         </div>
 
-        {/* Items Table */}
+        {}
         <div className="mb-12">
           <table className="w-full text-left border-collapse table-fixed">
             <thead>
@@ -121,13 +125,11 @@ const SaleInvoice = () => {
             </thead>
             <tbody>
               {sale.items.map((item, idx) => {
-                const p = item.product || {};
-                const taxRate = p.category?.taxRate ?? 0.19;
-                const priceTTC = item.sellingPrice * (1 + taxRate);
-                const totalTTC = item.quantity * priceTTC;
-
-                return (
-                  <tr key={idx} className="border-b border-gray-100">
+              const p = item.product || {};
+              const taxRate = p.category?.taxRate ?? 0.19;
+              const priceTTC = item.sellingPrice * (1 + taxRate);
+              const totalTTC = item.quantity * priceTTC;
+              return <tr key={idx} className="border-b border-gray-100">
                     <td className="py-6 text-left">
                       <p className="text-sm font-bold text-slate-900">{p.name || tFr('invoice.productDefault')}</p>
                       <p className="text-[10px] text-slate-400 font-mono uppercase mt-1">{p.sku || tFr('invoice.skuDefault')}</p>
@@ -137,14 +139,13 @@ const SaleInvoice = () => {
                     <td className="py-6 text-right text-sm text-slate-700">€{item.sellingPrice?.toFixed(2)}</td>
                     <td className="py-6 text-right text-sm text-slate-700">€{priceTTC.toFixed(2)}</td>
                     <td className="py-6 text-right text-sm font-bold text-slate-900">€{totalTTC.toFixed(2)}</td>
-                  </tr>
-                );
-              })}
+                  </tr>;
+            })}
             </tbody>
           </table>
         </div>
 
-        {/* Footer / Totals */}
+        {}
         <div className="flex justify-end pt-4">
           <div className="w-72 space-y-4">
             <div className="flex justify-between items-center text-sm">
@@ -162,19 +163,14 @@ const SaleInvoice = () => {
           </div>
         </div>
 
-        {/* Bottom Note */}
+        {}
         <div className="mt-24 border-t border-slate-100 pt-8 text-center">
           <p className="text-[10px] text-slate-400 uppercase tracking-widest font-black">{tFr('invoice.thanks')}</p>
-          <button
-            onClick={() => window.print()}
-            className="mt-6 px-8 py-3 bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest rounded-full hover:bg-slate-800 transition-colors print:hidden"
-          >
+          <button onClick={() => window.print()} className="mt-6 px-8 py-3 bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest rounded-full hover:bg-slate-800 transition-colors print:hidden">
             {tFr('invoice.print')}
           </button>
         </div>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default SaleInvoice;
