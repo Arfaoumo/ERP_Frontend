@@ -68,14 +68,14 @@ const SupplierForm = () => {
         const formDataFile = new FormData();
         formDataFile.append('image', pendingProductFile);
         const uploadConfig = { headers: { 'Content-Type': 'multipart/form-data' } };
-        const { data } = await axios.post('http://localhost:5000/api/upload/products', formDataFile, uploadConfig);
+        const { data } = await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/upload/products`, formDataFile, uploadConfig);
         uploadedUrl = data;
       }
 
       const payload = { ...newProductData, imageUrl: uploadedUrl };
 
       // Create product in DB
-      const productRes = await axios.post('http://localhost:5000/api/products', payload, config);
+      const productRes = await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/products`, payload, config);
       const newProduct = productRes.data;
 
       // Add to all products selection list state
@@ -116,11 +116,11 @@ const SupplierForm = () => {
         const config = { headers: { Authorization: `Bearer ${user.token}` } };
         
         // Always fetch all products for the selection list
-        const { data: prodData } = await axios.get('http://localhost:5000/api/products', config);
+        const { data: prodData } = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/products`, config);
         setAllProducts(prodData);
 
         if (isEditMode) {
-          const { data: suppData } = await axios.get('http://localhost:5000/api/suppliers', config);
+          const { data: suppData } = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/suppliers`, config);
           const supplier = suppData.find(s => s._id === id);
           if (supplier) {
             setFormData({
@@ -157,9 +157,9 @@ const SupplierForm = () => {
     try {
       const config = { headers: { Authorization: `Bearer ${user.token}` } };
       if (isEditMode) {
-        await axios.put(`http://localhost:5000/api/suppliers/${id}`, formData, config);
+        await axios.put(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/suppliers/${id}`, formData, config);
       } else {
-        await axios.post('http://localhost:5000/api/suppliers', formData, config);
+        await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/suppliers`, formData, config);
       }
       navigate('/purchases/suppliers');
     } catch (error) {
@@ -174,48 +174,55 @@ const SupplierForm = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8 flex justify-center items-start pt-20">
-      <div className="w-full max-w-2xl bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
-        <div className="flex items-center gap-3 mb-8">
-           <button onClick={() => navigate('/purchases/suppliers')} className="text-gray-400 hover:text-primary transition-colors">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+    <div className="min-h-screen bg-[#f8fafc] p-8">
+      <div className="max-w-4xl mx-auto bg-white rounded-[2rem] shadow-sm border border-slate-200/60 overflow-hidden">
+        <div className="p-8 border-b flex justify-between items-center bg-white">
+          <div className="flex items-center gap-4">
+           <button onClick={() => navigate('/purchases/suppliers')} className="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-50 text-slate-400 hover:text-slate-600 transition-colors">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
            </button>
-           <h1 className="text-2xl font-bold text-gray-900">
-             {isEditMode ? t('suppliers.updateProfile') : t('suppliers.onboardNew')}
-           </h1>
+           <div>
+             <h1 className="text-2xl font-black text-slate-900 tracking-tight uppercase">
+               {isEditMode ? t('suppliers.updateProfile') : t('suppliers.onboardNew')}
+             </h1>
+             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">
+               {isEditMode ? 'Profil du Fournisseur' : 'Nouveau Fournisseur'}
+             </p>
+           </div>
+        </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <form onSubmit={handleSubmit} className="p-8 space-y-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-1">{t('suppliers.companyNameLabel')}</label>
-              <input className="w-full p-2.5 border border-gray-200 rounded-lg bg-white focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all" required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} placeholder={t('suppliers.companyNamePlaceholder')} />
+              <label className="block text-xs font-black uppercase text-slate-400 tracking-widest mb-2">{t('suppliers.companyNameLabel')}</label>
+              <input className="w-full p-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none transition-all text-sm font-bold text-slate-900 uppercase placeholder:text-slate-300" required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} placeholder={t('suppliers.companyNamePlaceholder')} />
             </div>
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-1">{t('suppliers.contactName')}</label>
-              <input className="w-full p-2.5 border border-gray-200 rounded-lg bg-white focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all" value={formData.contactName} onChange={e => setFormData({...formData, contactName: e.target.value})} placeholder={t('suppliers.contactNamePlaceholder')} />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-bold text-gray-700 mb-1">{t('common.email')}</label>
-              <input type="email" className="w-full p-2.5 border border-gray-200 rounded-lg bg-white focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all" required value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} placeholder={t('suppliers.emailPlaceholder')} />
-            </div>
-            <div>
-              <label className="block text-sm font-bold text-gray-700 mb-1">{t('common.phone')}</label>
-              <input className="w-full p-2.5 border border-gray-200 rounded-lg bg-white focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} placeholder={t('suppliers.phonePlaceholder')} />
+              <label className="block text-xs font-black uppercase text-slate-400 tracking-widest mb-2">{t('suppliers.contactName')}</label>
+              <input className="w-full p-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none transition-all text-sm font-bold text-slate-900 uppercase placeholder:text-slate-300" value={formData.contactName} onChange={e => setFormData({...formData, contactName: e.target.value})} placeholder={t('suppliers.contactNamePlaceholder')} />
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-bold text-gray-700 mb-1">{t('suppliers.vatNumber')}</label>
-            <input className="w-full p-2.5 border border-gray-200 rounded-lg bg-white focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all" value={formData.vatNumber} onChange={e => setFormData({...formData, vatNumber: e.target.value})} placeholder={t('suppliers.vatPlaceholder')} />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div>
+              <label className="block text-xs font-black uppercase text-slate-400 tracking-widest mb-2">{t('common.email')}</label>
+              <input type="email" className="w-full p-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none transition-all text-sm font-bold text-slate-900 placeholder:text-slate-300" required value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} placeholder={t('suppliers.emailPlaceholder')} />
+            </div>
+            <div>
+              <label className="block text-xs font-black uppercase text-slate-400 tracking-widest mb-2">{t('common.phone')}</label>
+              <input className="w-full p-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none transition-all text-sm font-bold text-slate-900 uppercase placeholder:text-slate-300" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} placeholder={t('suppliers.phonePlaceholder')} />
+            </div>
           </div>
 
           <div>
-            <label className="block text-sm font-bold text-gray-700 mb-1">{t('suppliers.physicalAddress')}</label>
-            <textarea className="w-full p-2.5 border border-gray-200 rounded-lg bg-white focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all" rows="2" value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} placeholder={t('suppliers.addressPlaceholder')}></textarea>
+            <label className="block text-xs font-black uppercase text-slate-400 tracking-widest mb-2">{t('suppliers.vatNumber')}</label>
+            <input className="w-full p-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none transition-all text-sm font-bold text-slate-900 uppercase placeholder:text-slate-300" value={formData.vatNumber} onChange={e => setFormData({...formData, vatNumber: e.target.value})} placeholder={t('suppliers.vatPlaceholder')} />
+          </div>
+
+          <div>
+            <label className="block text-xs font-black uppercase text-slate-400 tracking-widest mb-2">{t('suppliers.physicalAddress')}</label>
+            <textarea className="w-full p-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none transition-all text-sm font-bold text-slate-900 placeholder:text-slate-300" rows="2" value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} placeholder={t('suppliers.addressPlaceholder')}></textarea>
           </div>
           
           <div className="pt-6 border-t mt-6">
@@ -287,23 +294,23 @@ const SupplierForm = () => {
             </div>
           </div>
 
-          <div className="flex items-center mt-6 p-4 bg-gray-50 rounded-xl border border-gray-100">
+          <div className="flex items-center p-6 bg-slate-50 rounded-2xl border border-slate-100 mt-6">
             <input 
               type="checkbox" 
               id="isActive" 
               checked={formData.isActive} 
               onChange={e => setFormData({...formData, isActive: e.target.checked})} 
-              className="mr-3 cursor-pointer w-5 h-5 accent-primary" 
+              className="mr-4 cursor-pointer w-5 h-5 accent-blue-600 rounded" 
             />
             <div>
-              <label htmlFor="isActive" className="text-sm font-bold text-gray-700 cursor-pointer block">{t('suppliers.activeSupplier')}</label>
-              <p className="text-xs text-gray-500">{t('suppliers.activeSupplierDesc')}</p>
+              <label htmlFor="isActive" className="text-xs font-black uppercase text-slate-700 tracking-widest cursor-pointer block">{t('suppliers.activeSupplier')}</label>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">{t('suppliers.activeSupplierDesc')}</p>
             </div>
           </div>
 
-          <div className="flex justify-end space-x-3 pt-8 border-t mt-8">
-            <button type="button" onClick={() => navigate('/purchases/suppliers')} className="px-6 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold hover:bg-gray-50 transition-colors">{t('common.cancel')}</button>
-            <button type="submit" className="px-8 py-2.5 bg-primary text-primary-foreground rounded-xl text-sm font-bold hover:opacity-90 transition-opacity shadow-lg shadow-primary/20">
+          <div className="flex justify-end gap-3 pt-6 border-t border-slate-100">
+            <button type="button" onClick={() => navigate('/purchases/suppliers')} className="px-6 py-3 border border-slate-200 rounded-2xl text-xs font-black uppercase tracking-widest text-slate-500 hover:bg-slate-50 transition-colors">{t('common.cancel')}</button>
+            <button type="submit" className="px-8 py-3 bg-blue-600 text-white rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-blue-700 transition-all shadow-lg shadow-blue-200 active:scale-95">
               {isEditMode ? t('suppliers.updateSupplier') : t('suppliers.completeOnboarding')}
             </button>
           </div>

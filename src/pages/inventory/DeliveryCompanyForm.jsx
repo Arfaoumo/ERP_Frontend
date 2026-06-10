@@ -23,7 +23,7 @@ const DeliveryCompanyForm = () => {
       const fetchCourier = async () => {
         try {
           const config = { headers: { Authorization: `Bearer ${user.token}` } };
-          const { data } = await axios.get('http://localhost:5000/api/delivery-companies/all', config);
+          const { data } = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/delivery-companies/all`, config);
           const courier = data.find(c => c._id === id);
           if (courier) {
             setFormData({
@@ -45,9 +45,9 @@ const DeliveryCompanyForm = () => {
     try {
       const config = { headers: { Authorization: `Bearer ${user.token}` } };
       if (isEditMode) {
-        await axios.put(`http://localhost:5000/api/delivery-companies/${id}`, formData, config);
+        await axios.put(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/delivery-companies/${id}`, formData, config);
       } else {
-        await axios.post('http://localhost:5000/api/delivery-companies', formData, config);
+        await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/delivery-companies`, formData, config);
       }
       navigate('/delivery-companies');
     } catch (error) {
@@ -57,9 +57,11 @@ const DeliveryCompanyForm = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] p-8 flex justify-center items-start pt-12">
-      <div className="w-full max-w-2xl bg-white p-8 rounded-[2rem] shadow-sm border border-slate-200/60 overflow-hidden">
-        <div className="flex items-center gap-4 mb-8">
+    <div className="min-h-screen bg-[#f8fafc] p-8">
+      <div className="max-w-4xl mx-auto bg-white rounded-[2rem] shadow-sm border border-slate-200/60 overflow-hidden">
+        <div className="p-8 border-b flex justify-between items-center bg-white">
+          <div className="flex items-center gap-4">
+
            <button onClick={() => navigate('/delivery-companies')} className="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-50 text-slate-400 hover:text-slate-600 transition-colors">
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
            </button>
@@ -72,16 +74,17 @@ const DeliveryCompanyForm = () => {
              </p>
            </div>
         </div>
+        </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <form onSubmit={handleSubmit} className="p-8 space-y-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div>
               <label className="block text-xs font-black uppercase text-slate-400 tracking-widest mb-2">{t('inventory.companyName')}</label>
-              <input className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 outline-none transition-all text-sm font-bold text-slate-900 uppercase placeholder:text-slate-300" required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} placeholder={t('inventory.companyNamePlaceholder')} />
+              <input className="w-full p-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none transition-all text-sm font-bold text-slate-900 uppercase placeholder:text-slate-300" required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} placeholder={t('inventory.companyNamePlaceholder')} />
             </div>
             <div>
               <label className="block text-xs font-black uppercase text-slate-400 tracking-widest mb-2">{t('auth.emailLabel')}</label>
-              <input type="email" className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 outline-none transition-all text-sm font-bold text-slate-900 lowercase placeholder:text-slate-300 placeholder:uppercase" required value={formData.contactEmail} onChange={e => setFormData({...formData, contactEmail: e.target.value})} placeholder={t('inventory.emailPlaceholderUpper')} />
+              <input type="email" className="w-full p-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none transition-all text-sm font-bold text-slate-900 lowercase placeholder:text-slate-300 placeholder:uppercase" required value={formData.contactEmail} onChange={e => setFormData({...formData, contactEmail: e.target.value})} placeholder={t('inventory.emailPlaceholderUpper')} />
             </div>
           </div>
 

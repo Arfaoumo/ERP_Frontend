@@ -27,9 +27,9 @@ const SaleForm = () => {
       try {
         const config = { headers: { Authorization: `Bearer ${user.token}` } };
         const [custData, prodData, courierData] = await Promise.all([
-          axios.get('http://localhost:5000/api/customers', config),
-          axios.get('http://localhost:5000/api/products', config),
-          axios.get('http://localhost:5000/api/delivery-companies', config)
+          axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/customers`, config),
+          axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/products`, config),
+          axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/delivery-companies`, config)
         ]);
         setCustomers(custData.data.filter(c => c.isActive));
         setProducts(prodData.data.filter(p => p.isActive !== false));
@@ -102,7 +102,7 @@ const SaleForm = () => {
       const taxAmount = calculateDynamicTax();
       const totalWithTax = totalAmt + taxAmount;
 
-      await axios.post('http://localhost:5000/api/sales', {
+      await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/sales`, {
         customer,
         documentNumber,
         documentType,
@@ -222,8 +222,8 @@ const SaleForm = () => {
                       type="number" 
                       step="0.01"
                       value={item.sellingPrice} 
-                      onChange={(e) => updateItem(index, 'sellingPrice', parseFloat(e.target.value))}
-                      className="w-full pl-7 pr-3 py-2.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none text-sm font-bold text-slate-900 transition-all"
+                      readOnly
+                      className="w-full pl-7 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-400 cursor-not-allowed"
                       required
                     />
                   </div>

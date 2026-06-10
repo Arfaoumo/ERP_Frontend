@@ -33,12 +33,12 @@ const PipelineList = () => {
   
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const fetchSales = async () => {
     try {
       const config = { headers: { Authorization: `Bearer ${user.token}` } };
-      const { data } = await axios.get('http://localhost:5000/api/sales', config);
+      const { data } = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/sales`, config);
       // Filter for Pipeline: Quotes and Orders only
       setSales(data.filter(s => s.documentType === 'Quote' || s.documentType === 'Order'));
     } catch (error) {
@@ -58,9 +58,9 @@ const PipelineList = () => {
     try {
       const config = { headers: { Authorization: `Bearer ${user.token}` } };
       if (action === 'convert') {
-        await axios.post(`http://localhost:5000/api/sales/${sale._id}/convert`, {}, config);
+        await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/sales/${sale._id}/convert`, {}, config);
       } else if (action === 'cancel') {
-        await axios.patch(`http://localhost:5000/api/sales/${sale._id}/cancel`, {}, config);
+        await axios.patch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/sales/${sale._id}/cancel`, {}, config);
       }
       fetchSales();
       setModalConfig({ open: false, sale: null, action: '' });
@@ -156,7 +156,7 @@ const PipelineList = () => {
                       <p className="text-sm font-black text-slate-900">{s.customer?.name}</p>
                     </td>
                     <td className="px-8 py-6 text-center">
-                      <p className="text-xs font-bold text-slate-500 uppercase">{new Date(s.createdAt).toLocaleDateString()}</p>
+                      <p className="text-xs font-bold text-slate-500 uppercase">{new Date(s.createdAt).toLocaleDateString(i18n.language === 'fr' ? 'fr-FR' : 'en-US')}</p>
                     </td>
                     <td className="px-8 py-6 text-center text-sm font-black text-slate-900">
                       €{s.totalAmount.toFixed(2)}
@@ -195,7 +195,7 @@ const PipelineList = () => {
                         {s.payments && s.payments.length > 0 && (
                           <button 
                             onClick={() => navigate(`/sales/history/${s._id}`)}
-                            className="text-[10px] font-black text-slate-600 hover:text-slate-800 uppercase tracking-widest transition-all"
+                            className="text-[10px] font-black text-blue-600 hover:text-blue-800 uppercase tracking-widest transition-all"
                           >
                             {t('pipeline.paymentHistory')}
                           </button>

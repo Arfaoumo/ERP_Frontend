@@ -60,7 +60,7 @@ const OcrInvoiceModal = ({ isOpen, onClose, supplier, supplierName, categories, 
           'Content-Type': 'multipart/form-data'
         }
       };
-      const { data } = await axios.post('http://localhost:5000/api/ocr/invoice/extract', formData, config);
+      const { data } = await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/ocr/invoice/extract`, formData, config);
       setExtracted(data);
       const mapped = (data.items || []).map((it) => ({
         ...it,
@@ -131,7 +131,7 @@ const OcrInvoiceModal = ({ isOpen, onClose, supplier, supplierName, categories, 
         }))
       };
       const config = { headers: { Authorization: `Bearer ${user.token}` } };
-      const { data } = await axios.post('http://localhost:5000/api/ocr/invoice/resolve', payload, config);
+      const { data } = await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/ocr/invoice/resolve`, payload, config);
       onResolved(data);
       reset();
       onClose();

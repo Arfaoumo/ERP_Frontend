@@ -1,10 +1,12 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AuthProvider } from './context/AuthContext';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import ProtectedRoute from './components/ProtectedRoute';
 import SystemLogs from './pages/SystemLogs';
+import Reports from './pages/Reports';
 
 import ProductList from './pages/inventory/ProductList';
 import ProductForm from './pages/inventory/ProductForm';
@@ -38,6 +40,10 @@ import PaymentHistory from './pages/sales/PaymentHistory';
 function App() {
   const { t, i18n } = useTranslation();
 
+  useEffect(() => {
+    document.documentElement.lang = i18n.language.startsWith('fr') ? 'fr' : 'en';
+  }, [i18n.language]);
+
   const toggleLanguage = () => {
     const nextLang = i18n.language.startsWith('en') ? 'fr' : 'en';
     i18n.changeLanguage(nextLang);
@@ -66,7 +72,8 @@ function App() {
             <Route path="/users" element={<ProtectedRoute allowedRoles={['Admin']}><UserList /></ProtectedRoute>} />
             <Route path="/users/new" element={<ProtectedRoute allowedRoles={['Admin']}><UserForm /></ProtectedRoute>} />
             <Route path="/users/edit/:id" element={<ProtectedRoute allowedRoles={['Admin']}><UserEditForm /></ProtectedRoute>} />
-            <Route path="/logs" element={<ProtectedRoute allowedRoles={['Admin']}><SystemLogs /></ProtectedRoute>} />
+            <Route path="/logs" element={<ProtectedRoute><SystemLogs /></ProtectedRoute>} />
+            <Route path="/reports" element={<ProtectedRoute allowedRoles={['Admin', 'Employee_Commercial', 'Employee_Achats']}><Reports /></ProtectedRoute>} />
 
             {/* Purchases Routes */}
             <Route path="/purchases/suppliers" element={<ProtectedRoute allowedRoles={['Admin', 'Employee_Achats']}><SupplierList /></ProtectedRoute>} />

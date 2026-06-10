@@ -64,14 +64,14 @@ const PurchaseOrderForm = () => {
         const formDataFile = new FormData();
         formDataFile.append('image', pendingProductFile);
         const uploadConfig = { headers: { 'Content-Type': 'multipart/form-data' } };
-        const { data } = await axios.post('http://localhost:5000/api/upload/products', formDataFile, uploadConfig);
+        const { data } = await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/upload/products`, formDataFile, uploadConfig);
         uploadedUrl = data;
       }
 
       const payload = { ...newProductData, imageUrl: uploadedUrl };
 
       // 1. Create product in DB
-      const productRes = await axios.post('http://localhost:5000/api/products', payload, config);
+      const productRes = await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/products`, payload, config);
       const newProduct = productRes.data;
 
       // 2. Link to selected supplier if present
@@ -79,7 +79,7 @@ const PurchaseOrderForm = () => {
         const selectedSupplier = suppliers.find(s => s._id === supplier);
         if (selectedSupplier) {
           const updatedProductsList = [...(selectedSupplier.products || []), newProduct._id];
-          await axios.put(`http://localhost:5000/api/suppliers/${supplier}`, {
+          await axios.put(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/suppliers/${supplier}`, {
             products: updatedProductsList
           }, config);
 
@@ -132,9 +132,9 @@ const PurchaseOrderForm = () => {
     const fetchData = async () => {
       const config = { headers: { Authorization: `Bearer ${user.token}` } };
       const [suppData, prodData, catData] = await Promise.all([
-        axios.get('http://localhost:5000/api/suppliers', config),
-        axios.get('http://localhost:5000/api/products', config),
-        axios.get('http://localhost:5000/api/categories', config)
+        axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/suppliers`, config),
+        axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/products`, config),
+        axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/categories`, config)
       ]);
       setSuppliers(suppData.data);
       setProducts(prodData.data.filter(p => p.isActive !== false));
@@ -190,7 +190,7 @@ const PurchaseOrderForm = () => {
 
     try {
       const config = { headers: { Authorization: `Bearer ${user.token}` } };
-      await axios.post('http://localhost:5000/api/purchases/orders', {
+      await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/purchases/orders`, {
         supplier,
         documentNumber,
         documentType: 'Order',
@@ -231,35 +231,42 @@ const PurchaseOrderForm = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
-      <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-md border overflow-hidden">
-        <div className="p-6 border-b flex justify-between items-center">
-          <h1 className="text-2xl font-bold">{t('purchases.newPurchaseOrder')}</h1>
-          <button onClick={() => navigate('/purchases/orders')} className="text-gray-500 hover:text-gray-700">{t('common.cancel')}</button>
+    <div className="min-h-screen bg-[#f8fafc] p-8">
+      <div className="max-w-4xl mx-auto bg-white rounded-[2rem] shadow-sm border border-slate-200/60 overflow-hidden">
+        <div className="p-8 border-b flex justify-between items-center bg-white">
+          <div className="flex items-center gap-4">
+             <button onClick={() => navigate('/purchases/orders')} className="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-50 text-slate-400 hover:text-slate-600 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+             </button>
+             <div>
+               <h1 className="text-2xl font-black text-slate-900 tracking-tight uppercase">{t('purchases.newPurchaseOrder')}</h1>
+               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Créer un Bon de Commande</p>
+             </div>
+          </div>
         </div>
         
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <form onSubmit={handleSubmit} className="p-8 space-y-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div>
-              <label className="block text-sm font-semibold mb-2">{t('purchases.documentNumber')}</label>
+              <label className="block text-xs font-black uppercase text-slate-400 tracking-widest mb-2">{t('purchases.documentNumber')}</label>
               <input 
                 type="text" 
                 value={documentNumber} 
                 readOnly
-                className="w-full p-2 border rounded bg-gray-100 font-mono text-gray-500 cursor-not-allowed"
+                className="w-full p-3 border border-slate-200 rounded-xl bg-slate-50 font-mono text-slate-400 font-bold cursor-not-allowed"
                 title={t('purchases.autoGeneratedDoc')}
                 required
               />
             </div>
             <div>
-              <label className="block text-sm font-semibold mb-2">{t('purchases.supplier')}</label>
+              <label className="block text-xs font-black uppercase text-slate-400 tracking-widest mb-2">{t('purchases.supplier')}</label>
               <select 
                 value={supplier} 
                 onChange={(e) => {
                   setSupplier(e.target.value);
                   setOrderItems([{ product: '', quantity: 1, buyingPrice: 0 }]); // Reset items when supplier changes
                 }}
-                className="w-full p-2 border rounded"
+                className="w-full p-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none transition-all text-sm font-bold text-slate-900"
                 required
               >
                 <option value="">{t('purchases.selectSupplier')}</option>
@@ -269,20 +276,20 @@ const PurchaseOrderForm = () => {
           </div>
 
           <div className="space-y-4">
-            <div className="flex justify-between items-center border-b pb-2">
-              <h2 className="text-lg font-bold">{t('purchases.orderItems')}</h2>
+            <div className="flex justify-between items-center border-b border-slate-100 pb-4">
+              <h2 className="text-lg font-black text-slate-800 uppercase tracking-tight">{t('purchases.orderItems')}</h2>
               {supplier && filteredProductsList.length === 0 && (
-                <span className="text-xs text-amber-600 italic">{t('purchases.supplierNoProducts')}</span>
+                <span className="text-[10px] font-black text-amber-500 uppercase tracking-widest">{t('purchases.supplierNoProducts')}</span>
               )}
             </div>
             {orderItems.map((item, index) => (
-              <div key={index} className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end bg-gray-50 p-4 rounded-lg border">
+              <div key={index} className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end bg-slate-50/50 p-6 rounded-2xl border border-slate-100">
                 <div className="md:col-span-5">
-                  <label className="block text-xs font-bold uppercase text-gray-500 mb-1">{t('common.product')}</label>
+                  <label className="block text-[10px] font-black uppercase text-slate-400 mb-1 tracking-widest">{t('common.product')}</label>
                   <select 
                     value={item.product} 
                     onChange={(e) => updateItem(index, 'product', e.target.value)}
-                    className="w-full p-2 border rounded bg-white disabled:opacity-50"
+                    className="w-full p-2.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none text-sm font-bold text-slate-900 disabled:opacity-50 transition-all"
                     required
                     disabled={!supplier}
                   >
@@ -291,44 +298,44 @@ const PurchaseOrderForm = () => {
                   </select>
                 </div>
                 <div className="md:col-span-2">
-                  <label className="block text-xs font-bold uppercase text-gray-500 mb-1">{t('common.qty')}</label>
+                  <label className="block text-[10px] font-black uppercase text-slate-400 mb-1 tracking-widest">{t('common.qty')}</label>
                   <input 
                     type="number" 
                     value={item.quantity === '' ? '' : item.quantity} 
                     onChange={(e) => updateItem(index, 'quantity', e.target.value === '' ? '' : parseInt(e.target.value))}
                     min="1"
-                    className="w-full p-2 border rounded bg-white"
+                    className="w-full p-2.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none text-sm font-bold text-slate-900 transition-all"
                     required
                   />
                 </div>
                 <div className="md:col-span-2">
-                  <label className="block text-xs font-bold uppercase text-gray-500 mb-1">{t('purchases.buyingPrice')}</label>
+                  <label className="block text-[10px] font-black uppercase text-slate-400 mb-1 tracking-widest">{t('purchases.buyingPrice')}</label>
                   <input 
                     type="number" 
                     value={item.buyingPrice === '' ? '' : item.buyingPrice} 
                     readOnly
                     step="0.01"
-                    className="w-full p-2 border rounded bg-gray-100 text-gray-500 cursor-not-allowed font-medium"
+                    className="w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 font-mono text-slate-400 font-bold cursor-not-allowed"
                     required
                     title={t('purchases.buyingPriceTooltip')}
                   />
                 </div>
                 <div className="md:col-span-2 text-right">
-                  <label className="block text-xs font-bold uppercase text-gray-500 mb-1">{t('common.subtotal')}</label>
-                  <div className="p-2 font-bold">€{(item.quantity * item.buyingPrice).toFixed(2)}</div>
+                  <label className="block text-[10px] font-black uppercase text-slate-400 mb-1 tracking-widest">{t('common.subtotal')}</label>
+                  <div className="p-2 text-sm font-black text-slate-900">€{(item.quantity * item.buyingPrice).toFixed(2)}</div>
                 </div>
                 <div className="md:col-span-1 text-right">
-                  <button type="button" onClick={() => removeItem(index)} className="text-red-500 hover:text-red-700 p-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                  <button type="button" onClick={() => removeItem(index)} className="w-10 h-10 flex items-center justify-center rounded-xl bg-rose-50 text-rose-400 hover:bg-rose-100 hover:text-rose-600 transition-colors ml-auto">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
                   </button>
                 </div>
               </div>
             ))}
-            <div className="flex justify-between items-center flex-wrap gap-3">
+            <div className="flex justify-between items-center flex-wrap gap-3 pt-2">
               <button 
                 type="button" 
                 onClick={addItem}
-                className="text-primary font-bold text-sm hover:underline"
+                className="text-[10px] font-black text-blue-600 hover:text-blue-800 uppercase tracking-widest flex items-center gap-1 transition-all"
               >
                 {t('purchases.addAnotherProduct')}
               </button>
@@ -338,31 +345,31 @@ const PurchaseOrderForm = () => {
                   onClick={() => setOcrModalOpen(true)}
                   disabled={!supplier}
                   title={!supplier ? t('purchases.ocr.selectSupplierFirst') : ''}
-                  className="text-indigo-600 font-bold text-sm hover:underline flex items-center gap-1.5 disabled:text-slate-400 disabled:cursor-not-allowed disabled:no-underline"
+                  className="text-[10px] font-black text-indigo-600 hover:text-indigo-800 uppercase tracking-widest flex items-center gap-1.5 disabled:text-slate-400 disabled:cursor-not-allowed transition-all"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
                   {t('purchases.ocr.scanInvoice')}
                 </button>
                 <button 
                   type="button" 
                   onClick={() => setProductModalOpen(true)}
-                  className="text-emerald-600 font-bold text-sm hover:underline flex items-center gap-1.5"
+                  className="text-[10px] font-black text-emerald-600 hover:text-emerald-800 uppercase tracking-widest flex items-center gap-1.5 transition-all"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
                   {t('purchases.createNewProduct')}
                 </button>
               </div>
             </div>
           </div>
 
-          <div className="flex justify-between items-center border-t pt-6">
+          <div className="flex justify-between items-center border-t border-slate-100 pt-8 mt-8">
             <div className="text-right">
-              <span className="text-gray-500 uppercase text-xs font-bold block">{t('purchases.totalAmount')}</span>
-              <span className="text-3xl font-bold">€{calculateTotal().toFixed(2)}</span>
+              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">{t('purchases.totalAmount')}</span>
+              <span className="text-3xl font-black text-slate-900 tracking-tight">€{calculateTotal().toFixed(2)}</span>
             </div>
             <button 
               type="submit" 
-              className="bg-primary text-primary-foreground px-8 py-3 rounded-lg font-bold hover:opacity-90 shadow-lg"
+              className="px-8 py-3 bg-blue-600 text-white rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-blue-700 transition-all shadow-lg shadow-blue-200 active:scale-95"
             >
               {t('purchases.confirmOrder')}
             </button>

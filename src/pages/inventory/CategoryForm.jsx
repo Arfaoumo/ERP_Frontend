@@ -23,7 +23,7 @@ const CategoryForm = () => {
       const fetchCategory = async () => {
         try {
           const config = { headers: { Authorization: `Bearer ${user.token}` } };
-          const { data } = await axios.get('http://localhost:5000/api/categories', config);
+          const { data } = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/categories`, config);
           const category = data.find(c => c._id === id);
           if (category) {
             setFormData({
@@ -46,9 +46,9 @@ const CategoryForm = () => {
       const config = { headers: { Authorization: `Bearer ${user.token}` } };
       const payload = { ...formData, taxRate: formData.taxRate ? (parseFloat(formData.taxRate) / 100) : 0 };
       if (isEditMode) {
-        await axios.put(`http://localhost:5000/api/categories/${id}`, payload, config);
+        await axios.put(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/categories/${id}`, payload, config);
       } else {
-        await axios.post('http://localhost:5000/api/categories', payload, config);
+        await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/categories`, payload, config);
       }
       navigate('/categories');
     } catch (error) {
@@ -58,9 +58,11 @@ const CategoryForm = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] p-8 flex justify-center items-start pt-12">
-      <div className="w-full max-w-2xl bg-white p-8 rounded-[2rem] shadow-sm border border-slate-200/60 overflow-hidden">
-        <div className="flex items-center gap-4 mb-8">
+    <div className="min-h-screen bg-[#f8fafc] p-8">
+      <div className="max-w-4xl mx-auto bg-white rounded-[2rem] shadow-sm border border-slate-200/60 overflow-hidden">
+        <div className="p-8 border-b flex justify-between items-center bg-white">
+          <div className="flex items-center gap-4">
+
            <button onClick={() => navigate('/categories')} className="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-50 text-slate-400 hover:text-slate-600 transition-colors">
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
            </button>
@@ -73,22 +75,23 @@ const CategoryForm = () => {
              </p>
            </div>
         </div>
+        </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <form onSubmit={handleSubmit} className="p-8 space-y-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div>
               <label className="block text-xs font-black uppercase text-slate-400 tracking-widest mb-2">{t('inventory.categoryName')}</label>
-              <input className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 outline-none transition-all text-sm font-bold text-slate-900 uppercase placeholder:text-slate-300" required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} placeholder={t('inventory.categoryNamePlaceholder')} />
+              <input className="w-full p-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none transition-all text-sm font-bold text-slate-900 uppercase placeholder:text-slate-300" required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} placeholder={t('inventory.categoryNamePlaceholder')} />
             </div>
             <div>
               <label className="block text-xs font-black uppercase text-slate-400 tracking-widest mb-2">{t('inventory.taxRatePct')}</label>
-              <input type="number" step="0.01" className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 outline-none transition-all text-sm font-bold text-slate-900 placeholder:text-slate-300" required value={formData.taxRate} onChange={e => setFormData({...formData, taxRate: e.target.value})} placeholder="20" />
+              <input type="number" step="0.01" className="w-full p-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none transition-all text-sm font-bold text-slate-900" required value={formData.taxRate} onChange={e => setFormData({...formData, taxRate: e.target.value})} placeholder="20" />
             </div>
           </div>
 
           <div>
             <label className="block text-xs font-black uppercase text-slate-400 tracking-widest mb-2">{t('inventory.description')}</label>
-            <textarea className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 outline-none transition-all text-sm font-bold text-slate-900 placeholder:text-slate-300" rows="3" value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} placeholder={t('inventory.descriptionPlaceholder')}></textarea>
+            <textarea className="w-full p-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none transition-all text-sm font-bold text-slate-900" rows="3" value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} placeholder={t('inventory.descriptionPlaceholder')}></textarea>
           </div>
 
           <div className="flex justify-end gap-3 pt-6 border-t border-slate-100">

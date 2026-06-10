@@ -38,7 +38,7 @@ const SaleList = () => {
   
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const handleConfirmAction = async () => {
     const { sale, action } = modalConfig;
@@ -46,7 +46,7 @@ const SaleList = () => {
     try {
       const config = { headers: { Authorization: `Bearer ${user.token}` } };
       if (action === 'convert') {
-        await axios.post(`http://localhost:5000/api/sales/${sale._id}/convert`, {}, config);
+        await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/sales/${sale._id}/convert`, {}, config);
       }
       fetchSales();
       setModalConfig({ open: false, sale: null, action: '' });
@@ -69,7 +69,7 @@ const SaleList = () => {
     e.preventDefault();
     try {
       const config = { headers: { Authorization: `Bearer ${user.token}` } };
-      await axios.put(`http://localhost:5000/api/sales/${activeSale._id}/payment`, paymentForm, config);
+      await axios.put(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/sales/${activeSale._id}/payment`, paymentForm, config);
       fetchSales();
       setShowPaymentModal(false);
       setActiveSale(null);
@@ -81,7 +81,7 @@ const SaleList = () => {
   const fetchSales = async () => {
     try {
       const config = { headers: { Authorization: `Bearer ${user.token}` } };
-      const { data } = await axios.get('http://localhost:5000/api/sales', config);
+      const { data } = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/sales`, config);
       // Strict Filter for Billing Panel: Delivery Notes and Invoices only
       setSales(data.filter(s => s.documentType === 'DeliveryNote' || s.documentType === 'Invoice'));
     } catch (error) {
@@ -186,7 +186,7 @@ const SaleList = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900 text-center">{s.customer?.name}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
-                      {new Date(s.createdAt).toLocaleDateString()}
+                      {new Date(s.createdAt).toLocaleDateString(i18n.language === 'fr' ? 'fr-FR' : 'en-US')}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-center font-black text-slate-900">
                       €{(s.totalAmount || 0).toFixed(2)}
@@ -239,7 +239,7 @@ const SaleList = () => {
                         )}
                         
                         {s.payments && s.payments.length > 0 && (
-                          <button onClick={() => navigate(`/sales/history/${s._id}`)} className="text-[10px] font-black text-slate-600 hover:text-slate-800 uppercase tracking-widest transition-all">{t('sales.paymentHistory')}</button>
+                          <button onClick={() => navigate(`/sales/history/${s._id}`)} className="text-[10px] font-black text-blue-600 hover:text-blue-800 uppercase tracking-widest transition-all">{t('sales.paymentHistory')}</button>
                         )}
 
                         {(s.documentType === 'Invoice' || s.documentType === 'DeliveryNote' || s.documentType === 'Quote' || s.documentType === 'Order') && (
